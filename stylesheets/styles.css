@@ -135,6 +135,7 @@ div.filterBar {
     margin-top: 6%;
     width: 60%;
     height: 80%;
+	overflow-y: scroll;
     border-color: grey;
     border-width: 2px;
     border-style: solid;
@@ -151,6 +152,10 @@ div.filterBar {
 div.topFilters {
     column-count: 2;
     padding: 5%;
+}
+
+div.collabFilters {
+    text-align: center;
 }
 
 div.tagFilters {

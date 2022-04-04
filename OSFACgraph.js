@@ -15,8 +15,9 @@ var width = getWidth() - 40,
 var orgFilterList = [];
 
 //  IDs of filtered project parameters to keep
-var filterYears = [];
+var collabFilterList = [];
 var tagIDs = [];
+var filterYears = [];
 var yearFilteredYet = false;
 
 //  values for node and text styles
@@ -104,13 +105,26 @@ var graphLayout = d3.forceSimulation()
 
 //	filter button event handler
 $("#filter").on("click", function addFilters() {
+	// Reset the collabFilterList array
+	collabFilterList.splice(0,collabFilterList.length);
 	// Reset the tagIDs array
 	tagIDs.splice(0,tagIDs.length);
 	// Reset the orgFilterList array
 	orgFilterList.splice(0,orgFilterList.length);
 	// Use data in JSON file to find orgs
 	d3.json(graphFile).then(function(g) {
-		// Check values of each filter checkbox in the tags section
+		// Check values of each filter checkbox in the project collaborations section
+		for (var i = 0; i < g.collabNames.length; i++) {
+			// get collaboration name
+			var collabName = g.collabNames[i].id;
+			// If the collaboration is checked, add it to the collabFilterList to filter project links
+			if ($('#' + reformatTagName(collabName)).is(":checked")) {
+				collabFilterList.push(collabName);
+			}
+		}
+		console.log(collabFilterList);
+		
+		// Check values of each filter checkbox in the project tags section
 		for (var i = 0; i < g.tagNames.length; i++) {
 			// get tag name
 			var tagName = g.tagNames[i].id;
@@ -147,6 +161,10 @@ $("#clearFilter").on("click", function clearFilters() {
 	orgFilterList.splice(0,orgFilterList.length);
 	// Uncheck all organization checkboxes
 	$('#orgFilterWindow :checkbox:enabled').prop('checked', false);
+	// Reset collabFilterList array
+	collabFilterList.splice(0,collabFilterList.length);
+	// Uncheck all collaborations checkboxes
+	$('#collabFilterWindow :checkbox:enabled').prop('checked', false);
 	// Reset tagIDs array
 	tagIDs.splice(0,tagIDs.length);
 	// Uncheck all tag checkboxes
@@ -250,7 +268,7 @@ function update() {
 		.attr("class", "link")
 		// link stroke color will distinguish ARCHES and CHA projects
 		.attr("stroke", function(d) {
-            if (d.projType == "ARCHES") {
+            if (d.projType == "Jump ARCHES") {
                 return "#ccc";
             }
 			else if (d.projType == "CHA") {
@@ -644,8 +662,8 @@ $(".exitPanel").on("click", function exitPanel() {
 //	FILTERING
 
 function filter() {
-	// if no project tags or organizations are selected and filter year range is min to max years, reset network
-	if (orgFilterList.length == 0 && tagIDs.length == 0 && filterYears[0] == parseInt(graph.values[0].minYear) && filterYears[1] == parseInt(graph.values[0].maxYear)){
+	// if no project collaboration types or project tags or investigator organizations are selected and filter year range is set min to max years, reset network
+	if (collabFilterList.length == 0 && orgFilterList.length == 0 && tagIDs.length == 0 && filterYears[0] == parseInt(graph.values[0].minYear) && filterYears[1] == parseInt(graph.values[0].maxYear)){
 		console.log("Reset: show all nodes and links");
 		store.nodes.forEach(function(n) {
 			if (!n.visible) {
@@ -702,9 +720,98 @@ function filter() {
 			});
 		}
 		
-		// if tags are selected, add and remove links from data based on availability of nodes, project year range, and selected tags
-		if (tagIDs.length > 0) {
-			console.log("Tag(s) selected, filtering links");
+		// if collaboration type(s) and tag(s) are selected, add and remove links from data based on availability of nodes, project year range, collaboration type, and selected tags
+		if (collabFilterList.length > 0 && tagIDs.length > 0) {
+			console.log("Collaboration type(s) and tag(s) selected, filtering links");
+			store.links.forEach(function(l) {
+				store.nodes.forEach(function(n) {
+					// find node visibilities at ends of link
+					if (l.source == n.id) {
+						l.sourceVisible = n.visible;
+					}
+					if (l.target == n.id) {
+						l.targetVisible = n.visible;
+					}
+				})
+				var containsEveryTag = tagIDs.every(item => l.tags.includes(item));
+				// if either node is not visible and link is visible
+				if (!(l.sourceVisible && l.targetVisible) && l.visible) {
+					l.visible = false;
+					graph.links.forEach(function(d, i) {
+						if (l.id === d.id) {
+							// remove the link from the graph
+							graph.links.splice(i, 1);
+							console.log("Removed link " + l.id);	
+						}
+					})
+				}
+				// if (both nodes are visible and link is not visible) & (project year is within filtered range and project is one of the filtered collaboration types and project has all filtered tags)
+				else if (l.sourceVisible && l.targetVisible && !l.visible && (l.year >= filterYears[0]) && (l.year <= filterYears[1]) && collabFilterList.includes(l.projType) && containsEveryTag) {
+					l.visible = true;
+					// add the link to the graph
+					graph.links.push($.extend(true, {}, l));
+					console.log("Added link " + l.id);
+				}
+				// if both nodes are visible and link is visible & (project year is not within filtered range or isn't of the filtered collaboration types or doesn't have all filtered tags)
+				else if (l.sourceVisible && l.targetVisible && l.visible && ((l.year < filterYears[0]) || (l.year > filterYears[1]) || !collabFilterList.includes(l.projType) || !containsEveryTag)) {
+					l.visible = false;
+					graph.links.forEach(function(d, i) {
+						if (l.id === d.id) {
+							// remove the link from the graph
+							graph.links.splice(i, 1);
+							console.log("Removed link " + l.id);
+						}
+					})
+				}
+			});
+		}
+		// if only collaboration types are selected, add and remove links from data based on availability of nodes, project year range, and collaboration type
+		else if (collabFilterList.length > 0 && tagIDs.length == 0) {
+			console.log("Only collaboration type(s) selected, filtering links");
+			store.links.forEach(function(l) {
+				store.nodes.forEach(function(n) {
+					// find node visibilities at ends of link
+					if (l.source == n.id) {
+						l.sourceVisible = n.visible;
+					}
+					if (l.target == n.id) {
+						l.targetVisible = n.visible;
+					}
+				})
+				// if either node is not visible and link is visible
+				if (!(l.sourceVisible && l.targetVisible) && l.visible) {
+					l.visible = false;
+					graph.links.forEach(function(d, i) {
+						if (l.id === d.id) {
+							// remove the link from the graph
+							graph.links.splice(i, 1);
+							console.log("Removed link " + l.id);	
+						}
+					})
+				}
+				// if (both nodes are visible and link is not visible) & (project year is within filtered range and project is one of the filtered collaboration types)
+				else if (l.sourceVisible && l.targetVisible && !l.visible && (l.year >= filterYears[0]) && (l.year <= filterYears[1]) && collabFilterList.includes(l.projType)) {
+					l.visible = true;
+					// add the link to the graph
+					graph.links.push($.extend(true, {}, l));
+					console.log("Added link " + l.id);
+				}
+				// if both nodes are visible and link is visible & (project year is not within filtered range or isn't of the filtered collaboration types)
+				else if (l.sourceVisible && l.targetVisible && l.visible && ((l.year < filterYears[0]) || (l.year > filterYears[1]) || !collabFilterList.includes(l.projType))) {
+					l.visible = false;
+					graph.links.forEach(function(d, i) {
+						if (l.id === d.id) {
+							// remove the link from the graph
+							graph.links.splice(i, 1);
+							console.log("Removed link " + l.id);
+						}
+					})
+				}
+			});
+		}
+		// if only tags are selected, add and remove links from data based on availability of nodes, project year range, and selected tags
+		else if (collabFilterList.length == 0 && tagIDs.length > 0) {
+			console.log("Only tag(s) selected, filtering links");
 			store.links.forEach(function(l) {
 				store.nodes.forEach(function(n) {
 					// find node visibilities at ends of link
@@ -747,9 +854,9 @@ function filter() {
 				}
 			});
 		}
-		// if no tags are selected, reset all links to be visible before filtering by node availability and project year range
+		// if no collaboration types nor tags are selected, reset all links to be visible before filtering by node availability and project year range
 		else {
-			console.log("No tags selected, reseting links for filtering");
+			console.log("No collaboration types nor tags selected, reseting links for filtering");
 			store.links.forEach(function(l) {
 				store.nodes.forEach(function(n) {
 					// find node visibilities at ends of link
@@ -760,14 +867,6 @@ function filter() {
 						l.targetVisible = n.visible;
 					}
 				})
-				// 1st, reset links: if both nodes are visible and link is not visible
-				if (l.sourceVisible && l.targetVisible && !l.visible) {
-					l.visible = true;
-					// add the link to the graph
-					graph.links.push($.extend(true, {}, l));
-					console.log("Added link " + l.id);
-				}
-				// 2nd, filter links by node availability and project year
 				// if either node is not visible and link is visible
 				if (!(l.sourceVisible && l.targetVisible) && l.visible) {
 					l.visible = false;
