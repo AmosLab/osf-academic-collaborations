@@ -55,50 +55,61 @@
         <a id="BoxLink" href="none">Link to File</a>
     </div>
 	<div class = "filterBar" id="filterBar">
-		<div class = "tagFilters">
-			<p><b>Project Tags</b></p>
-			<input size="60" id="tagSearch" placeholder="Search for a Tag...">
-			<button type="button" class="filterButton" id="addTag">Add Tag</button>
-			<button type="button" class="filterButton" id="clearTags">Clear All Tags</button>
-			<br>
-			<div class = "tagListWindow" id ="tagListWindow">
+		<div class = "filterLists">
+			<div class = "collabFilters">
+				<p><b>Project Collaborations</b></p>
+				<form>
+					<div class = "collabFilterWindow" id = "collabFilterWindow">
+						<input type="checkbox" id="CHA" checked="false"/>CHA
+						<input type="checkbox" id="JumpARCHES" checked="false"/>Jump ARCHES
+					</div>
+				</form>
 			</div>
-		</div>
-		<form class = "yearSlider" id = "yearSlider">
-			<p><b>Project Year Range</b></p>
-			<div>
-				<div class = "minYear">
-					<label>Minimum Year</label>
-					<input type="text" class="sliderValue" data-index="0" value="2014" />
-				</div>
-				<div class = "maxYear">
-					<label>Maximum Year</label>
-					<input type="text" class="sliderValue" data-index="1" value="2021" />
+			<div class = "tagFilters">
+				<p><b>Project Tags</b></p>
+				<input size="60" id="tagSearch" placeholder="Search for a Tag...">
+				<button type="button" class="filterButton" id="addTag">Add Tag</button>
+				<button type="button" class="filterButton" id="clearTags">Clear All Tags</button>
+				<br>
+				<div class = "tagListWindow" id ="tagListWindow">
 				</div>
 			</div>
-			<div class = "sliderDiv">
-				<!--
-				<style>
-					.ui-slider-horizontal {
-						height: unset !important;
-					}
-				</style>
-				-->
-				<div id="slider">	
+			<form class = "yearSlider" id = "yearSlider">
+				<p><b>Project Year Range</b></p>
+				<div class = "yearDisplay">
+					<div class = "minYear">
+						<label>Minimum Year</label>
+						<input type="text" class="sliderValue" data-index="0" value="2014" />
+					</div>
+					<div class = "maxYear">
+						<label>Maximum Year</label>
+						<input type="text" class="sliderValue" data-index="1" value="2021" />
+					</div>
 				</div>
-			</div>
-		</form>
-		<div class = "orgFilters">
-			<p><b>Investigator Affiliation</b></p>
-			<form>
-				<div class = "orgFilterWindow" id = "orgFilterWindow">
-					<input type="checkbox" id="orgOSF" checked="false"/>OSF
-					<input type="checkbox" id="orgUIC" checked="false"/>UIC
-					<input type="checkbox" id="orgUICOMP" checked="false"/>UICOMP
-					<input type="checkbox" id="orgUIUC" checked="false"/>UIUC
-					<input type="checkbox" id="orgOther" checked="false"/>Other
+				<div class = "sliderDiv">
+					<!--
+					<style>
+						.ui-slider-horizontal {
+							height: unset !important;
+						}
+					</style>
+					-->
+					<div id="slider">	
+					</div>
 				</div>
 			</form>
+			<div class = "orgFilters">
+				<p><b>Investigator Affiliation</b></p>
+				<form>
+					<div class = "orgFilterWindow" id = "orgFilterWindow">
+						<input type="checkbox" id="orgOSF" checked="false"/>OSF
+						<input type="checkbox" id="orgUIC" checked="false"/>UIC
+						<input type="checkbox" id="orgUICOMP" checked="false"/>UICOMP
+						<input type="checkbox" id="orgUIUC" checked="false"/>UIUC
+						<input type="checkbox" id="orgOther" checked="false"/>Other
+					</div>
+				</form>
+			</div>
 		</div>
 		<div class= "finalFilterButtons">
             <button type="button" class="filterButton" id="filter">Set Filters</button>
