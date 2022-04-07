@@ -135,7 +135,6 @@ div.filterBar {
     margin-top: 6%;
     width: 60%;
     height: 80%;
-	overflow-y: scroll;
     border-color: grey;
     border-width: 2px;
     border-style: solid;
@@ -149,9 +148,9 @@ div.filterBar {
     z-index: 2;
 }
 
-div.topFilters {
-    column-count: 2;
-    padding: 5%;
+div.filterLists {
+	height: 90%;
+	overflow-y: scroll;
 }
 
 div.collabFilters {
@@ -192,6 +191,10 @@ div.maxYear {
 	float: right;
 	position: absolute;
 	right: 5%;
+}
+
+div.yearDisplay {
+	position: relative;
 }
 
 div.sliderDiv {
@@ -272,20 +275,6 @@ br {
 	stroke: #ccc;
 	stroke-width: 1.5px;
 	*/
-}
-
-.templink {
-    fill: none;
-    stroke: red;
-    stroke-width: 3px;
-}
-
-.ghostCircle.show {
-    display:block;
-}
-
-.ghostCircle, .activeDrag .ghostCircle {
-    display: none;
 }
 
 form.tagList {
