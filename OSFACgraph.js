@@ -1043,6 +1043,8 @@ $("#clear").click(
 		$('#infoPanel').css("display","block")
 		$('#infoPanel').css("pointer-events","none")
 		unfocus();
+		//clear text value in investigator search bar
+		$('#search').val('');
 	}
 );
 
